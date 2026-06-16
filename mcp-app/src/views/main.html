@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Go Green — EV Ride Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,600;12..96,800&family=Azeret+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    /* ── Reset & tokens ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:        #03080a;
+      --surface:   #060f0c;
+      --surface2:  #0a1a15;
+      --border:    #0d2a1e;
+      --border2:   #153d2c;
+      --green:     #00e87a;
+      --green2:    #00c468;
+      --lime:      #c8ff6b;
+      --text:      #d4f0e5;
+      --muted:     #3d6e58;
+      --dimmer:    #1a3329;
+      --amber:     #ffb827;
+      --red:       #ff4f4f;
+      --blue:      #4fa8ff;
+      --purple:    #b87bff;
+      --font:      'Bricolage Grotesque', sans-serif;
+      --mono:      'Azeret Mono', monospace;
+      --r:         14px;
+      --r-sm:      8px;
+    }
+    html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; }
+
+    /* ── Scrollbar ────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    #app { display:grid; grid-template-rows:auto 1fr; height:100vh; overflow:hidden; }
+
+    /* ── Header ───────────────────────────────────────────────────────── */
+    header {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 16px;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      position:relative;
+    }
+    header::after {
+      content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,var(--green)44,transparent);
+    }
+    .logo { font-size:1.5rem; font-weight:800; letter-spacing:-1px;
+      background:linear-gradient(135deg,var(--green),var(--lime));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .logo-sub { font-size:.68rem; color:var(--muted); font-family:var(--mono); letter-spacing:.5px; }
+    .pills { display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; }
+    .pill {
+      font-size:.62rem; font-weight:600; font-family:var(--mono);
+      padding:3px 9px; border-radius:20px; letter-spacing:.3px;
+      background:var(--dimmer); border:1px solid var(--border2); color:var(--green);
+    }
+    .pulse { display:inline-block; width:7px; height:7px; border-radius:50%;
+      background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+    /* ── Main grid ────────────────────────────────────────────────────── */
+    main { display:grid; grid-template-columns:300px 1fr 320px; overflow:hidden; height:100%; }
+
+    /* ── Panel base ───────────────────────────────────────────────────── */
+    .panel { display:flex; flex-direction:column; overflow:hidden; border-right:1px solid var(--border); }
+    .panel:last-child { border-right:none; }
+    .panel-head {
+      padding:10px 14px; font-size:.7rem; font-weight:600; letter-spacing:.8px;
+      color:var(--muted); font-family:var(--mono);
+      border-bottom:1px solid var(--border);
+      background:var(--surface); flex-shrink:0;
+      display:flex; align-items:center; gap:8px;
+    }
+    .panel-body { flex:1; overflow-y:auto; padding:10px; }
+
+    /* ── WhatsApp Panel ───────────────────────────────────────────────── */
+    #wa-panel { background:var(--surface); }
+
+    .wa-header {
+      display:flex; align-items:center; gap:8px; padding:8px 12px;
+      background:#0c1e18; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .wa-avatar { width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,var(--green2),var(--lime));
+      display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .wa-name { font-weight:700; font-size:.82rem; color:var(--text); }
+    .wa-status { font-size:.65rem; color:var(--green); }
+
+    .wa-msgs { flex:1; overflow-y:auto; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+
+    .msg { max-width:85%; border-radius:12px; padding:8px 11px; font-size:.8rem; line-height:1.55; }
+    .msg-user { background:#0e3324; color:#c8f5db; border-radius:12px 12px 3px 12px; align-self:flex-end; }
+    .msg-bot  { background:#0a1e18; border:1px solid var(--border2); color:var(--text);
+      border-radius:12px 12px 12px 3px; align-self:flex-start; white-space:pre-wrap; }
+    .msg b    { color:var(--green); }
+    .msg em   { color:var(--muted); font-style:normal; }
+
+    .msg-typing { display:flex; gap:4px; align-items:center; padding:10px 12px; }
+    .dot { width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bounce .9s infinite; }
+    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+    @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+    /* Quick replies */
+    .qr-row { padding:6px 10px; display:flex; flex-wrap:wrap; gap:5px; flex-shrink:0; border-top:1px solid var(--border); }
+    .qr { background:var(--surface2); border:1px solid var(--border2); border-radius:18px;
+      padding:4px 12px; font-size:.72rem; color:var(--green); cursor:pointer; transition:all .15s; }
+    .qr:hover { background:var(--dimmer); border-color:var(--green); }
+
+    /* Input row */
+    .wa-input-row { display:flex; gap:6px; padding:8px 10px; flex-shrink:0; border-top:1px solid var(--border); background:var(--surface); }
+    .wa-input { flex:1; background:#0a1e18; border:1px solid var(--border2); border-radius:22px;
+      padding:8px 14px; color:var(--text); font-family:var(--font); font-size:.8rem; outline:none; }
+    .wa-input:focus { border-color:var(--green); }
+    .wa-send { width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg,var(--green2),var(--green));
+      border:none; color:#000; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+    /* ── Rides + Map Panel ────────────────────────────────────────────── */
+    #center-panel { background:var(--bg); }
+    .tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .tab { padding:9px 16px; font-size:.72rem; font-weight:700; font-family:var(--mono);
+      color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; letter-spacing:.5px; transition:all .15s; }
+    .tab.on { color:var(--green); border-bottom-color:var(--green); }
+
+    #tab-rides { padding:10px; overflow-y:auto; flex:1; }
+    #tab-map   { flex:1; overflow:hidden; }
+    #tab-pay   { padding:10px; overflow-y:auto; flex:1; }
+
+    /* Ride card */
+    .ride-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r); padding:12px 14px; margin-bottom:8px;
+      cursor:pointer; transition:transform .15s, box-shadow .15s; position:relative;
+    }
+    .ride-card:hover { transform:translateY(-2px); }
+    .ride-card.top { border-color:var(--green); box-shadow:0 0 20px var(--green)22; }
+    .rc-badge {
+      position:absolute; top:-9px; left:12px;
+      font-size:.62rem; font-weight:700; font-family:var(--mono);
+      padding:2px 10px; border-radius:20px; letter-spacing:.3px; color:#000;
+    }
+    .rc-row { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .rc-logo { font-size:.72rem; font-weight:800; padding:3px 10px; border-radius:6px; letter-spacing:.4px; }
+    .rc-type { font-size:.8rem; font-weight:700; color:var(--text); }
+    .rc-model { font-size:.68rem; color:var(--muted); }
+    .rc-price { font-size:1.35rem; font-weight:800; }
+    .rc-meta { display:flex; gap:12px; margin-top:8px; font-size:.68rem; color:#5d9175; flex-wrap:wrap; }
+    .rc-meta .hi { color:var(--text); font-weight:600; }
+    .rc-score { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+    .rc-score-val { font-size:1.6rem; font-weight:800; font-family:var(--mono); line-height:1; }
+    .rc-score-lbl { font-size:.58rem; color:var(--muted); letter-spacing:.4px; }
+    .score-bar { width:42px; height:3px; background:var(--border2); border-radius:3px; margin:4px auto; }
+    .score-fill { height:100%; border-radius:3px; }
+    .book-btn {
+      margin-top:8px; width:100%; padding:7px; border:none; border-radius:8px;
+      font-family:var(--font); font-weight:700; font-size:.78rem; cursor:pointer; transition:opacity .15s;
+    }
+    .book-btn:hover { opacity:.85; }
+
+    /* Map */
+    #leaflet-map { height:100%; width:100%; }
+
+    /* Payment panel */
+    .pay-box {
+      background:#071a10; border:1px solid var(--green)33; border-radius:var(--r);
+      padding:16px; margin-bottom:10px;
+    }
+    .pay-label { font-size:.65rem; color:var(--green); letter-spacing:.8px; font-family:var(--mono); margin-bottom:8px; }
+    .pay-amount { font-size:2rem; font-weight:800; font-family:var(--mono); color:var(--green); margin-bottom:12px; }
+    .pay-steps { display:flex; flex-direction:column; gap:8px; }
+    .pay-step { display:flex; align-items:center; gap:10px; font-size:.78rem; }
+    .step-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    .step-icon.done { background:#0d3020; border:1px solid var(--green)44; }
+    .step-icon.wait { background:#1a2010; border:1px solid var(--amber)44; animation:pulse 1.5s infinite; }
+    .stk-anim { animation:pulse 1s infinite; display:inline-block; }
+
+    /* ── Carbon Panel ─────────────────────────────────────────────────── */
+    #carbon-panel { background:var(--surface); }
+    .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+    .metric { background:var(--surface2); border-radius:var(--r-sm); padding:10px 12px; border-left:3px solid; }
+    .metric-title { font-size:.63rem; color:var(--muted); letter-spacing:.5px; font-family:var(--mono); margin-bottom:4px; }
+    .metric-val { font-size:1.1rem; font-weight:800; font-family:var(--mono); line-height:1; }
+    .metric-sub { font-size:.62rem; color:var(--dimmer); margin-top:3px; }
+
+    .formula-box {
+      background:#020e07; border:1px solid var(--border); border-radius:var(--r-sm);
+      padding:10px 12px; font-family:var(--mono); font-size:.7rem; color:var(--green2);
+      line-height:1.9; margin-bottom:10px;
+    }
+    .formula-box .label { font-size:.6rem; color:var(--muted); letter-spacing:.6px; margin-bottom:5px; }
+    .formula-box b { color:var(--lime); }
+    .formula-box .res { color:var(--text); font-weight:600; }
+
+    .portfolio-entry {
+      display:flex; align-items:center; gap:10px; padding:8px 10px;
+      background:var(--surface2); border:1px solid var(--border); border-radius:8px; margin-bottom:6px;
+    }
+    .portfolio-vcu { font-family:var(--mono); font-size:.78rem; font-weight:700; color:var(--green); text-align:right; }
+    .portfolio-kes { font-size:.65rem; color:var(--muted); text-align:right; }
+
+    .verra-tag {
+      background:#030d07; border:1px solid var(--border2); border-radius:8px;
+      padding:8px 10px; font-family:var(--mono); font-size:.63rem; color:var(--muted); line-height:1.7;
+    }
+    .verra-tag b { color:var(--green2); }
+
+    /* ── Agent log ────────────────────────────────────────────────────── */
+    .log { font-family:var(--mono); font-size:.63rem; color:var(--muted); }
+    .log-step { margin-bottom:4px; }
+    .log-step.done { color:var(--green2); }
+    .log-step.run  { color:var(--amber); }
+
+    /* ── Placeholder ──────────────────────────────────────────────────── */
+    .empty { color:var(--dimmer); padding:30px; text-align:center; font-size:.78rem; }
+    .empty span { font-size:2rem; display:block; margin-bottom:8px; }
+  </style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header>
+    <div>
+      <div class="logo">🌿 Go Green</div>
+      <div class="logo-sub">EV RIDE AGENT · NAIROBI</div>
+    </div>
+    <div class="pills">
+      <span class="pill"><span class="pulse"></span> LIVE</span>
+      <span class="pill">7 EV PROVIDERS</span>
+      <span class="pill">VM0038 VCUs</span>
+      <span class="pill">M-PESA STK</span>
+    </div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────────────────────────────── -->
+  <main>
+
+    <!-- LEFT: WhatsApp Simulator -->
+    <div class="panel" id="wa-panel">
+      <div class="wa-header">
+        <div class="wa-avatar">🌿</div>
+        <div>
+          <div class="wa-name">Go Green</div>
+          <div class="wa-status">● Online · EV Agent</div>
+        </div>
+      </div>
+      <div class="wa-msgs" id="wa-msgs"></div>
+      <div class="qr-row" id="qr-row"></div>
+      <div class="wa-input-row">
+        <input class="wa-input" id="wa-input" placeholder="Type a message…"/>
+        <button class="wa-send" onclick="sendMsg()">↑</button>
+      </div>
+    </div>
+
+    <!-- CENTER: Rides / Map / Payment -->
+    <div class="panel" id="center-panel" style="display:flex;flex-direction:column;">
+      <div class="tabs">
+        <div class="tab on"  onclick="showTab('rides',this)" id="tab-btn-rides">⚡ RIDES</div>
+        <div class="tab"     onclick="showTab('map',this)"   id="tab-btn-map">🗺 MAP</div>
+        <div class="tab"     onclick="showTab('pay',this)"   id="tab-btn-pay">💳 PAYMENT</div>
+      </div>
+
+      <div id="tab-rides">
+        <div class="empty" id="rides-empty"><span>⚡</span>Available EV rides will appear here.<br>Tell me where you're going →</div>
+        <div id="rides-list"></div>
+      </div>
+
+      <div id="tab-map" style="display:none">
+        <div id="leaflet-map"></div>
+      </div>
+
+      <div id="tab-pay" style="display:none">
+        <div class="empty" id="pay-empty"><span>💳</span>M-Pesa payment will appear here after booking.</div>
+        <div id="pay-content"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Carbon Credits -->
+    <div class="panel" id="carbon-panel">
+      <div class="panel-head">🌿 CARBON CREDITS — VM0038</div>
+      <div class="panel-body">
+        <div id="carbon-trip" class="empty"><span>🌱</span>Carbon credits will appear after your first trip.</div>
+        <div id="carbon-portfolio" style="display:none"></div>
+        <div id="carbon-formula"   style="display:none"></div>
+        <div id="carbon-verra"     style="display:none">
+          <div class="verra-tag">
+            <b>Methodology:</b> Verra VM0038 v1.0<br>
+            <b>Additionality:</b> VMD0049 positive list ✅<br>
+            <b>Kenya Grid EF:</b> 0.061 kgCO₂e/kWh (IEA 2024)<br>
+            <b>NET_FACTOR:</b> 0.873 (3% leakage + 10% VCS buffer)<br>
+            <b>VCU Price:</b> ~$12.50 / tCO₂e · KSh 1,625<br>
+            <b>Crediting:</b> 7 years (renewable × 2)
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="panel-head" style="border-top:1px solid var(--border);font-size:.6rem">🤖 AGENT LOG</div>
+          <div class="log" id="agent-log" style="padding:8px">Agents standing by…</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+// ── Import shared data logic ──────────────────────────────────────────────────
+import {
+  NAIROBI_PLACES, PROVIDERS, VM0038,
+  haversineKm, calcVM0038, geocode, parseRoute, generateOffers
+} from '/src/data.ts';
+
+// ── MCP App connection ────────────────────────────────────────────────────────
+// When running inside Claude/ChatGPT as an MCP App, the App class provides
+// bidirectional comms. When running standalone (dev), it gracefully degrades.
+let mcpApp = null;
+try {
+  const { App } = await import('@modelcontextprotocol/ext-apps');
+  mcpApp = new App({ name:'Go Green', version:'1.0.0' });
+  mcpApp.ontoolresult = (result) => {
+    const text = result.content?.find(c=>c.type==='text')?.text ?? '';
+    if (text) addBotMsg(text);
+  };
+  await mcpApp.connect();
+} catch {
+  // Running standalone — fully client-side demo mode
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const STATE = {
+  phone:     '+254712345678',
+  pickup:    '', dest:'',
+  pickupLL:  null, dropLL: null,
+  offers:    [],
+  chosen:    null,
+  trips:     [],
+  step:      'idle',   // idle | showing_rides | confirming | paying | booked
+};
+
+let leafMap = null;
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const waMsgs   = document.getElementById('wa-msgs');
+const qrRow    = document.getElementById('qr-row');
+const ridesList= document.getElementById('rides-list');
+const ridesEmpty=document.getElementById('rides-empty');
+const payContent=document.getElementById('pay-content');
+const payEmpty  =document.getElementById('pay-empty');
+const carbonTrip=document.getElementById('carbon-trip');
+const carbonPort=document.getElementById('carbon-portfolio');
+const carbonForm=document.getElementById('carbon-formula');
+const carbonVerra=document.getElementById('carbon-verra');
+const agentLog  =document.getElementById('agent-log');
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function fmtKes(n) { return `KSh ${Math.round(n).toLocaleString()}`; }
+function fmtCo2(kg) { return kg < 1 ? `${(kg*1000).toFixed(0)}g` : `${kg.toFixed(3)}kg`; }
+
+function addBotMsg(text) {
+  const div = document.createElement('div');
+  div.className = 'msg msg-bot';
+  div.innerHTML = text.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/_([^_]+)_/g,'<em>$1</em>');
+  waMsgs.appendChild(div);
+  waMsgs.scrollTop = waMsgs.scrollHeight;
+}
+
+function addUserMsg(text) {
+  const div = document.createElement('div');
+  div.className = 'msg msg-user';
+  div.textContent = text;
+  waMsgs.appendChild(div);
+  waMsgs.scrollTop = waMsgs.scrollHeight;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.id = 'typing'; div.className = 'msg msg-bot msg-typing';
+  div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  waMsgs.appendChild(div);
+  waMsgs.scrollTop = waMsgs.scrollHeight;
+  return () => div.remove();
+}
+
+function setQR(items) {
+  qrRow.innerHTML = items.map(q =>
+    `<span class="qr" onclick="window.injectQR('${q}')">${q}</span>`
+  ).join('');
+}
+
+function log(icon, agent, task, result='') {
+  const div = document.createElement('div');
+  div.className = `log-step ${icon==='✅'?'done':icon==='🔄'?'run':''}`;
+  div.textContent = `${icon} [${agent}] ${task}${result?' → '+result:''}`;
+  agentLog.innerHTML === 'Agents standing by…' && (agentLog.innerHTML='');
+  agentLog.appendChild(div);
+}
+
+window.injectQR = (text) => {
+  document.getElementById('wa-input').value = text;
+  sendMsg();
+};
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function showTab(id, el) {
+  ['rides','map','pay'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t===id ? (t==='map'?'flex':'block') : 'none';
+    document.getElementById(`tab-btn-${t}`).classList.toggle('on', t===id);
+  });
+  if (id==='map' && STATE.pickupLL && STATE.dropLL) renderMap();
+}
+window.showTab = showTab;
+
+// ── Map ────────────────────────────────────────────────────────────────────────
+function renderMap() {
+  const [pLat,pLon] = STATE.pickupLL;
+  const [dLat,dLon] = STATE.dropLL;
+  const cLat = (pLat+dLat)/2, cLon = (pLon+dLon)/2;
+  if (leafMap) { leafMap.remove(); leafMap=null; }
+  leafMap = L.map('leaflet-map',{zoomControl:true,attributionControl:false}).setView([cLat,cLon],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(leafMap);
+  const gi = L.divIcon({html:'<div style="background:#00e87a;width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #00e87a88"></div>',className:'',iconAnchor:[6,6]});
+  const ri = L.divIcon({html:'<div style="background:#ff4f4f;width:13px;height:13px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #ff4f4f88"></div>',className:'',iconAnchor:[6,6]});
+  L.marker([pLat,pLon],{icon:gi}).addTo(leafMap).bindPopup(`<b>📍 ${STATE.pickup}</b>`).openPopup();
+  L.marker([dLat,dLon],{icon:ri}).addTo(leafMap).bindPopup(`<b>🏁 ${STATE.dest}</b>`);
+  L.polyline([[pLat,pLon],[dLat,dLon]],{color:'#00e87a',weight:3,dashArray:'6 4',opacity:.85}).addTo(leafMap);
+  leafMap.fitBounds([[pLat,pLon],[dLat,dLon]],{padding:[30,30]});
+}
+
+// ── Render ride cards ─────────────────────────────────────────────────────────
+function renderRides(offers) {
+  ridesEmpty.style.display = 'none';
+  ridesList.innerHTML = offers.map((o,i) => {
+    const isTop = i===0;
+    const txtC  = o.textColor;
+    return `
+<div class="ride-card ${isTop?'top':''}" style="${isTop?'border-color:'+o.color:''}">
+  ${o.badge ? `<div class="rc-badge" style="background:${o.color};color:${txtC}">${o.badge}</div>` : ''}
+  <div class="rc-row">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="rc-logo" style="background:${o.color};color:${txtC}">${o.provider.toUpperCase()}</span>
+      <div>
+        <div class="rc-type">${o.rideType}</div>
+        <div class="rc-model">${o.evModel}</div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="rc-price" style="color:${o.color}">${fmtKes(o.priceKes)}</div>
+      <div style="font-size:.65rem;color:var(--muted)">${o.distanceKm.toFixed(1)} km</div>
+    </div>
+    <div class="rc-score">
+      <div class="rc-score-lbl">SCORE</div>
+      <div class="rc-score-val" style="color:${o.color}">${o.dealScore}</div>
+      <div class="score-bar"><div class="score-fill" style="width:${o.dealScore}%;background:${o.color}"></div></div>
+    </div>
+  </div>
+  <div class="rc-meta">
+    <span>⏱ <span class="hi">${o.etaMin}m</span></span>
+    <span>⭐ ${o.driverRating}</span>
+    <span>👤 ${o.driverName}</span>
+    <span style="color:#00e87a">🌱 ${o.co2SavedG}g CO₂</span>
+    ${o.surge>1?`<span style="color:var(--amber)">▲×${o.surge}</span>`:''}
+    ${o.promoCode?`<span style="color:var(--lime)">🏷 ${o.promoCode}</span>`:''}
+  </div>
+  <button class="book-btn" style="background:${o.color};color:${txtC}" onclick="window.pickRide(${i})">
+    Book ${o.provider} →
+  </button>
+</div>`;
+  }).join('');
+}
+
+// ── Render payment panel ──────────────────────────────────────────────────────
+function renderPayment(offer, tripId) {
+  payEmpty.style.display = 'none';
+  payContent.innerHTML = `
+<div class="pay-box">
+  <div class="pay-label">💳 M-PESA STK PUSH</div>
+  <div class="pay-amount">${fmtKes(offer.priceKes)}</div>
+  <div class="pay-steps">
+    <div class="pay-step">
+      <div class="step-icon done">✓</div>
+      <div>Booking confirmed — <b>${offer.provider}</b> ${offer.rideType}</div>
+    </div>
+    <div class="pay-step">
+      <div class="step-icon wait">📱</div>
+      <div>STK push → <b>${STATE.phone}</b><br>
+        <span style="color:var(--muted);font-size:.7rem">Enter M-Pesa PIN to pay</span></div>
+    </div>
+    <div class="pay-step">
+      <div class="step-icon done">🚗</div>
+      <div><b>${offer.evModel}</b> · ${offer.driverName} ⭐${offer.driverRating}<br>
+        <span style="color:var(--muted);font-size:.7rem">ETA ${offer.etaMin} min · Plate: ${offer.plate}</span></div>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:.68rem;color:var(--muted);font-family:var(--mono)">
+    Trip ID: <span style="color:var(--lime)">${tripId}</span>
+  </div>
+</div>`;
+  showTab('pay', null);
+}
+
+// ── Render carbon panel ───────────────────────────────────────────────────────
+function renderCarbon(carbon, offer, allTrips) {
+  carbonTrip.style.display = 'none';
+  carbonVerra.style.display = 'block';
+
+  const totalVcu = allTrips.reduce((s,t)=>s+t.carbon.netVcu, 0);
+  const totalKg  = allTrips.reduce((s,t)=>s+t.carbon.netKg,  0);
+  const totalKes = allTrips.reduce((s,t)=>s+t.carbon.vcuValueKes, 0);
+
+  const mcol = (t,v,s,c) => `
+<div class="metric" style="border-left-color:${c}">
+  <div class="metric-title">${t}</div>
+  <div class="metric-val" style="color:${c}">${v}</div>
+  <div class="metric-sub">${s}</div>
+</div>`;
+
+  carbonPort.style.display = 'block';
+  carbonPort.innerHTML = `
+<div style="font-size:.65rem;color:var(--muted);font-family:var(--mono);letter-spacing:.6px;margin-bottom:8px">THIS TRIP</div>
+<div class="metric-grid">
+  ${mcol('🌿 CO₂ SAVED',    fmtCo2(carbon.netKg),             `${carbon.netVcu.toFixed(8)} tCO₂e`,  '#00e87a')}
+  ${mcol('💎 VCUs EARNED',  carbon.netVcu.toFixed(8),          'Verra VM0038 v1.0',                  '#b87bff')}
+  ${mcol('💰 VCU VALUE',    `KSh ${carbon.vcuValueKes.toFixed(4)}`, `≈ $${(carbon.vcuValueKes/130).toFixed(5)}`, '#ffb827')}
+  ${mcol('🌳 TREES',        carbon.treesEquiv.toFixed(4),      'trees absorbing CO₂/yr',             '#c8ff6b')}
+</div>
+<div style="font-size:.65rem;color:var(--muted);font-family:var(--mono);letter-spacing:.6px;margin:10px 0 6px">PORTFOLIO — ALL TRIPS (${allTrips.length})</div>
+<div class="metric-grid">
+  ${mcol('🌿 TOTAL CO₂',   fmtCo2(totalKg),                  `${(totalKg/1000).toFixed(6)} tCO₂e`, '#00e87a')}
+  ${mcol('💎 TOTAL VCUs',  totalVcu.toFixed(7),               'Accumulated',                         '#b87bff')}
+  ${mcol('💰 PORTFOLIO',   `KSh ${totalKes.toFixed(2)}`,      `${allTrips.length} trips`,            '#ffb827')}
+  ${mcol('⛽ PETROL SAVED',`${carbon.petrolSavedL.toFixed(2)}L`, 'this trip',                        '#ff4f4f')}
+</div>
+${allTrips.slice(-3).reverse().map(t=>`
+<div class="portfolio-entry">
+  <span style="font-size:1.1rem">🚗</span>
+  <div style="flex:1">
+    <div style="font-size:.75rem;font-weight:700;color:var(--text)">${t.pickup} → ${t.dest}</div>
+    <div style="font-size:.65rem;color:var(--muted)">${t.provider} · ${t.distanceKm}km</div>
+  </div>
+  <div>
+    <div class="portfolio-vcu">${t.carbon.netVcu.toFixed(8)}</div>
+    <div class="portfolio-kes">KSh ${t.carbon.vcuValueKes.toFixed(4)}</div>
+  </div>
+</div>`).join('')}`;
+
+  carbonForm.style.display = 'block';
+  carbonForm.innerHTML = `
+<div class="formula-box">
+  <div class="label">VM0038 FORMULA — ${carbon.distanceKm}km</div>
+  BE = ${carbon.distanceKm}km × 0.09 × 2.296 × 1.19 = <b>${fmtCo2(carbon.baselineKg)}</b><br>
+  PE = kWh ÷ η_L2 × 0.061 = <b>${fmtCo2(carbon.projectKg)}</b><br>
+  Net ER = BE−PE−3% = <b>${fmtCo2(carbon.netKg)}</b><br>
+  VCU = Net ÷ 1000 × 0.9 = <b class="res">${carbon.netVcu.toFixed(8)} tCO₂e</b>
+</div>`;
+}
+
+// ── Main conversation router ──────────────────────────────────────────────────
+async function route(text) {
+  const t = text.toLowerCase().trim();
+
+  if (['hi','hello','hey','start','menu','reset'].includes(t) || STATE.step==='idle') {
+    STATE.step='idle';
+    addBotMsg(`🌿 **Welcome to Go Green!**\n\nI'll book you a clean ⚡ EV ride from Nairobi's finest green fleet.\n\nJust tell me where you're going:\n_e.g. "Westlands to Karen" or "CBD to JKIA"_`);
+    setQR(['Westlands to Karen','CBD to JKIA','Kilimani to Gigiri','Ruaka to Upperhill']);
+    return;
+  }
+
+  if (STATE.step === 'idle' || STATE.step === 'showing_rides') {
+    await doSearch(text);
+    return;
+  }
+  if (STATE.step === 'showing_rides') { await doSearch(text); return; }
+  if (STATE.step === 'confirming')    { doConfirm(t);         return; }
+  if (STATE.step === 'paying' || STATE.step === 'booked') { doBooked(); return; }
+  await doSearch(text);
+}
+
+async function doSearch(text) {
+  const stopTyping = showTyping();
+  log('🔄','LocationAgent',`Parsing "${text.slice(0,40)}"`);
+  await sleep(300);
+
+  const { pickup, dest } = parseRoute(text);
+  const pLL = geocode(pickup) ?? [-1.2833, 36.8172];
+  const dLL = geocode(dest)   ?? [-1.2833+(Math.random()-.5)*.06, 36.8172+(Math.random()-.5)*.06];
+  const dist = haversineKm(pLL[0],pLL[1],dLL[0],dLL[1]);
+
+  STATE.pickup  = pickup; STATE.dest    = dest;
+  STATE.pickupLL= pLL;    STATE.dropLL  = dLL;
+  log('✅','LocationAgent',`Geocoded`,`${pLL[0].toFixed(4)},${pLL[1].toFixed(4)}`);
+  log('🔄','RideAgent','Querying 7 EV providers…');
+  await sleep(600);
+
+  STATE.offers = generateOffers(dist);
+  log('✅','RideAgent','Fetched',`7 offers | Best: ${STATE.offers[0].provider} ${fmtKes(STATE.offers[0].priceKes)}`);
+  log('🔄','DealAgent','Scoring & ranking…');
+  await sleep(300);
+  log('✅','DealAgent','Ranked',`Score leader: ${STATE.offers[0].provider} (${STATE.offers[0].dealScore})`);
+
+  stopTyping();
+
+  // Render cards and map
+  renderRides(STATE.offers);
+  renderMap();
+  showTab('rides', document.getElementById('tab-btn-rides'));
+  STATE.step = 'showing_rides';
+
+  const msg = [
+    `🌿 **Go Green EV Rides**\n`,
+    `📍 **From:** ${pickup}`,
+    `🏁 **To:** ${dest}`,
+    `🛣️ ~${dist.toFixed(1)} km\n`,
+    STATE.offers.slice(0,4).map((o,i)=>
+      `**${i+1}.** ${o.provider} — KSh ${o.priceKes.toLocaleString()} · ${o.etaMin}m ETA · ${o.evModel}`
+    ).join('\n'),
+    `\n_Tap a card or reply 1-7 to book. Full cards ↑_`,
+  ].join('\n');
+
+  addBotMsg(msg);
+  setQR(['1','2','3','4','5','6','7','Change destination']);
+}
+
+window.pickRide = (idx) => {
+  STATE.chosen = STATE.offers[idx];
+  STATE.step   = 'confirming';
+  const o = STATE.chosen;
+  addUserMsg(`${idx+1}`);
+  addBotMsg(
+    `✅ **${o.provider} — ${o.rideType}**\n\n` +
+    `🚗 ${o.evModel}\n👤 ${o.driverName}  ⭐${o.driverRating}  🚘 ${o.plate}\n` +
+    `📍 ETA: **${o.etaMin} min** · 🛣️ ${o.distanceKm} km · ~${o.durationMin}m ride\n` +
+    `💰 **${fmtKes(o.priceKes)}**\n` +
+    `🌱 Saves ~${o.co2SavedG}g CO₂ vs petrol\n` +
+    `${o.promoCode ? `🏷 Promo **${o.promoCode}** applied\n`:''}` +
+    `\nReply **YES** to pay via M-Pesa, or **NO** to go back.`
+  );
+  setQR(['YES','NO']);
+};
+
+async function doConfirm(t) {
+  if (['yes','y','confirm','ok','sure'].includes(t)) {
+    const stopTyping = showTyping();
+    log('🔄','PaymentAgent',`M-Pesa STK → ${STATE.phone}`);
+    await sleep(800);
+
+    const tripId = `GG-${Date.now().toString().slice(-6)}`;
+    const carbon = calcVM0038(STATE.chosen.distanceKm);
+    STATE.trips.push({
+      tripId, phone:STATE.phone,
+      pickup:STATE.pickup, destination:STATE.dest,
+      provider:STATE.chosen.provider, priceKes:STATE.chosen.priceKes,
+      distanceKm:STATE.chosen.distanceKm, carbon, timestamp:Date.now(),
+    });
+    log('✅','PaymentAgent','STK sent',`${fmtKes(STATE.chosen.priceKes)} to ${STATE.phone}`);
+    log('🔄','CarbonAgent',`VM0038 calc — ${STATE.chosen.distanceKm}km`);
+    await sleep(300);
+    log('✅','CarbonAgent',`${fmtCo2(carbon.netKg)} CO₂ saved → ${carbon.netVcu.toFixed(8)} VCU`);
+
+    stopTyping();
+    renderPayment(STATE.chosen, tripId);
+    renderCarbon(carbon, STATE.chosen, STATE.trips);
+    STATE.step = 'paying';
+
+    addBotMsg(
+      `💳 **M-Pesa payment sent!**\n\n` +
+      `📱 Check **${STATE.phone}** — enter PIN to pay **${fmtKes(STATE.chosen.priceKes)}**\n` +
+      `Trip ID: \`${tripId}\`\n\n` +
+      `🌿 **Carbon Credits Earned**\n` +
+      `CO₂ saved: **${fmtCo2(carbon.netKg)}** (${carbon.netVcu.toFixed(8)} tCO₂e)\n` +
+      `💎 VCUs: **${carbon.netVcu.toFixed(8)}**  •  Value: **KSh ${carbon.vcuValueKes.toFixed(4)}**\n` +
+      `🌳 ≈ ${carbon.treesEquiv.toFixed(3)} trees absorbing CO₂ for 1 year\n\n` +
+      `_Certified under Verra VM0038 v1.0_ ✅`
+    );
+
+    setTimeout(()=>{
+      addBotMsg(
+        `✅ **Payment confirmed!** 🎉\n\n` +
+        `🚗 **${STATE.chosen.evModel}** is on the way\n` +
+        `👤 ${STATE.chosen.driverName} is heading to **${STATE.pickup}**\n` +
+        `⏱️ ETA: **${STATE.chosen.etaMin} min**\n\n` +
+        `🌿 _Thank you for choosing a green ride!_\nType **MENU** to book another.`
+      );
+      STATE.step='booked';
+      setQR(['MENU','Portfolio','Credits']);
+    }, 3000);
+  } else if (['no','n','cancel','back'].includes(t)) {
+    STATE.step='showing_rides';
+    addBotMsg('No problem! Reply with 1-7 to choose again, or send a new destination.');
+    setQR(['1','2','3','4','5','Change destination']);
+  } else {
+    addBotMsg('Reply **YES** to confirm payment or **NO** to go back.');
+  }
+}
+
+function doBooked() {
+  if (['portfolio','credits','carbon'].some(w=>document.getElementById('wa-input').value.toLowerCase().includes(w))) {
+    addBotMsg(`📊 **Your Carbon Portfolio**\n\n${STATE.trips.length} trips · ${STATE.trips.reduce((s,t)=>s+(t.carbon.netKg*1000),0).toFixed(0)}g CO₂ saved · ${STATE.trips.reduce((s,t)=>s+t.carbon.netVcu,0).toFixed(7)} VCUs`);
+  } else {
+    addBotMsg('Your ride is confirmed! 🌿 Type **MENU** to book another ride.');
+    setQR(['MENU']);
+  }
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+// ── Send message handler ──────────────────────────────────────────────────────
+window.sendMsg = async () => {
+  const inp  = document.getElementById('wa-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  addUserMsg(text);
+
+  // If MCP App is connected, also call the server tool
+  if (mcpApp && text.length > 3 && STATE.step === 'idle') {
+    mcpApp.callServerTool({ name:'search_rides', arguments:{ query:text, phone:STATE.phone } }).catch(()=>{});
+  }
+
+  setTimeout(() => route(text.toLowerCase().trim()), 150);
+};
+
+document.getElementById('wa-input').addEventListener('keydown', e => {
+  if (e.key==='Enter') window.sendMsg();
+});
+
+// ── Auto-greet ────────────────────────────────────────────────────────────────
+setTimeout(() => route('hi'), 400);
+</script>
+</body>
+</html>

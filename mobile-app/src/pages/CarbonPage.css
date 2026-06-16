@@ -1,0 +1,106 @@
+.gg-carbon { --background: var(--ion-background-color); }
+
+.gg-carbon__method-bar {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding: 10px 14px 8px; scrollbar-width: none;
+  border-bottom: 1px solid var(--gg-border);
+}
+.gg-carbon__method-bar::-webkit-scrollbar { display: none; }
+.gg-carbon__method-pill {
+  flex-shrink: 0;
+  background: var(--gg-dim); border: 1px solid var(--gg-border2);
+  color: var(--gg-green); border-radius: 20px;
+  font-size: .6rem; font-weight: 700; font-family: var(--gg-mono);
+  padding: 3px 10px; letter-spacing: .3px; white-space: nowrap;
+}
+
+.gg-carbon__metrics {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 12px 14px;
+}
+.gg-carbon__metric-card {
+  margin: 0 !important;
+  border-radius: var(--gg-r) !important;
+  border: 1px solid var(--gg-border) !important;
+}
+.gg-carbon__metric-card ion-card-content {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px !important;
+}
+.gg-carbon__metric-title { font-size: .6rem; color: var(--gg-muted); letter-spacing: .5px; font-family: var(--gg-mono); }
+.gg-carbon__metric-value { font-size: 1rem; font-weight: 800; font-family: var(--gg-mono); line-height: 1.1; }
+.gg-carbon__metric-sub   { font-size: .62rem; color: var(--gg-muted); }
+
+/* Formula card */
+.gg-carbon__formula-card {
+  margin: 0 14px 10px !important;
+  border: 1px solid var(--gg-border) !important;
+  background: #020e07 !important;
+  border-radius: var(--gg-r) !important;
+}
+.gg-carbon__formula-title {
+  font-size: .6rem; color: var(--gg-muted); letter-spacing: .6px;
+  font-family: var(--gg-mono); margin-bottom: 8px;
+}
+.gg-carbon__formula {
+  font-family: var(--gg-mono); font-size: .72rem;
+  color: var(--gg-green); line-height: 1.9;
+}
+.gg-carbon__formula b { color: var(--gg-lime); }
+.gg-carbon__formula-note {
+  margin-top: 8px; font-size: .62rem; color: var(--gg-muted);
+  border-top: 1px solid var(--gg-border); padding-top: 8px;
+  line-height: 1.7;
+}
+.gg-carbon__formula-note b { color: var(--gg-green2); }
+
+/* Progress card */
+.gg-carbon__progress-card {
+  margin: 0 14px 12px !important;
+  border: 1px solid var(--gg-border) !important;
+  border-radius: var(--gg-r) !important;
+}
+.gg-carbon__progress-row {
+  display: flex; justify-content: space-between;
+  font-size: .78rem; margin-bottom: 8px;
+}
+.gg-carbon__progress-pct { color: var(--gg-green); font-weight: 700; font-family: var(--gg-mono); }
+.gg-carbon__progress-track {
+  height: 6px; background: var(--gg-dim);
+  border-radius: 6px; overflow: hidden; margin-bottom: 6px;
+}
+.gg-carbon__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gg-green2), var(--gg-green));
+  border-radius: 6px; transition: width .6s ease;
+  min-width: 4px;
+}
+.gg-carbon__progress-sub { font-size: .65rem; color: var(--gg-muted); font-family: var(--gg-mono); }
+
+/* Section label */
+.gg-carbon__section-label {
+  font-size: .6rem; color: var(--gg-muted); letter-spacing: .8px;
+  font-family: var(--gg-mono); padding: 4px 16px 6px;
+}
+
+/* Ledger */
+.gg-carbon__ledger { padding: 0 14px; }
+.gg-carbon__ledger-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--gg-surface); border: 1px solid var(--gg-border);
+  border-radius: var(--gg-r-sm); margin-bottom: 7px;
+}
+.gg-carbon__ledger-icon { font-size: 1.2rem; }
+.gg-carbon__ledger-body { flex: 1; }
+.gg-carbon__ledger-title { font-size: .8rem; font-weight: 600; }
+.gg-carbon__ledger-sub   { font-size: .65rem; color: var(--gg-muted); margin-top: 2px; }
+.gg-carbon__ledger-right { text-align: right; }
+.gg-carbon__ledger-vcu   { font-family: var(--gg-mono); font-size: .78rem; font-weight: 700; color: var(--gg-green); }
+.gg-carbon__ledger-kes   { font-size: .65rem; color: var(--gg-muted); }
+
+.gg-carbon__empty {
+  padding: 40px 20px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  color: var(--gg-muted); font-size: .88rem;
+}

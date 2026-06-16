@@ -1,0 +1,5 @@
+anthropic>=0.30.0
+gradio>=4.40.0
+flask>=3.0.0
+requests>=2.32.0
+twilio>=9.0.0          # optional: only needed for Twilio WhatsApp provider

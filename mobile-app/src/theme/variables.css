@@ -1,0 +1,112 @@
+/**
+ * Go Green — Ionic Design System
+ * Deep rainforest-at-night aesthetic:
+ *   near-black backgrounds · electric green accents · amber for money
+ *   Typography: Bricolage Grotesque (display) + Azeret Mono (data)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&family=Azeret+Mono:wght@400;600&display=swap');
+
+/* ── Ionic CSS variable overrides ────────────────────────────────────────── */
+:root {
+  /* Core palette */
+  --ion-background-color:         #03080a;
+  --ion-background-color-rgb:     3, 8, 10;
+  --ion-text-color:               #d4f0e5;
+  --ion-text-color-rgb:           212, 240, 229;
+
+  /* Ionic colour steps (dark → light) */
+  --ion-color-step-50:   #0a1812;
+  --ion-color-step-100:  #102518;
+  --ion-color-step-150:  #17321f;
+  --ion-color-step-200:  #1d3f25;
+  --ion-color-step-300:  #2a5a35;
+  --ion-color-step-400:  #377445;
+  --ion-color-step-500:  #448f55;
+  --ion-color-step-600:  #51a965;
+  --ion-color-step-700:  #5ec375;
+  --ion-color-step-800:  #6bdd85;
+  --ion-color-step-900:  #78f695;
+
+  /* Primary (electric green) */
+  --ion-color-primary:         #00e87a;
+  --ion-color-primary-rgb:     0, 232, 122;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-shade:   #00c468;
+  --ion-color-primary-tint:    #33ed95;
+
+  /* Secondary (lime) */
+  --ion-color-secondary:         #c8ff6b;
+  --ion-color-secondary-rgb:     200, 255, 107;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-shade:   #b0e05e;
+  --ion-color-secondary-tint:    #d0ff7a;
+
+  /* Tertiary (amber — money/payments) */
+  --ion-color-tertiary:         #ffb827;
+  --ion-color-tertiary-rgb:     255, 184, 39;
+  --ion-color-tertiary-contrast: #000000;
+  --ion-color-tertiary-shade:   #e0a222;
+  --ion-color-tertiary-tint:    #ffbf3d;
+
+  /* Success / Warning / Danger */
+  --ion-color-success:  #00e87a;
+  --ion-color-warning:  #ffb827;
+  --ion-color-danger:   #ff4f4f;
+
+  /* Surfaces */
+  --ion-card-background:       #060f0c;
+  --ion-toolbar-background:    #030a07;
+  --ion-item-background:       #060f0c;
+  --ion-tab-bar-background:    #030a07;
+  --ion-tab-bar-border-color:  #0d2a1e;
+
+  /* Typography */
+  --ion-font-family: 'Bricolage Grotesque', sans-serif;
+
+  /* Custom tokens */
+  --gg-border:     #0d2a1e;
+  --gg-border2:    #153d2c;
+  --gg-surface:    #060f0c;
+  --gg-surface2:   #0a1a15;
+  --gg-muted:      #3d6e58;
+  --gg-dim:        #1a3329;
+  --gg-green:      #00e87a;
+  --gg-green2:     #00c468;
+  --gg-lime:       #c8ff6b;
+  --gg-amber:      #ffb827;
+  --gg-red:        #ff4f4f;
+  --gg-blue:       #4fa8ff;
+  --gg-purple:     #b87bff;
+  --gg-mono:       'Azeret Mono', monospace;
+
+  /* Radius */
+  --gg-r:     14px;
+  --gg-r-sm:  8px;
+  --gg-r-lg:  20px;
+}
+
+/* ── Global resets ───────────────────────────────────────────────────────── */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+ion-content  { --background: var(--ion-background-color); }
+ion-header   { --background: var(--ion-toolbar-background); }
+ion-toolbar  { --background: var(--ion-toolbar-background); --border-color: var(--gg-border); }
+ion-tab-bar  { --background: var(--ion-tab-bar-background); border-top: 1px solid var(--gg-border); }
+ion-tab-button { --color: var(--gg-muted); --color-selected: var(--gg-green); }
+ion-card     { --background: var(--gg-surface); border: 1px solid var(--gg-border); border-radius: var(--gg-r); }
+ion-item     { --background: transparent; --border-color: var(--gg-border); --color: var(--ion-text-color); }
+ion-input    { --background: var(--gg-surface2); --color: var(--ion-text-color); --border-radius: var(--gg-r-sm); border: 1px solid var(--gg-border); }
+ion-searchbar{ --background: var(--gg-surface2); --color: var(--ion-text-color); --border-radius: var(--gg-r); }
+ion-button   { --border-radius: var(--gg-r-sm); font-family: var(--ion-font-family); font-weight: 700; }
+
+ion-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; letter-spacing: -0.5px; }
+
+/* Scrollbar */
+::-webkit-scrollbar         { width: 3px; }
+::-webkit-scrollbar-thumb   { background: var(--gg-border2); border-radius: 3px; }
+::-webkit-scrollbar-track   { background: transparent; }
+
+/* Safe area helpers */
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

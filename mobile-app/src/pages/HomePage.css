@@ -1,0 +1,122 @@
+/* ── HomePage ─────────────────────────────────────────────────────────────── */
+.gg-home { --background: var(--ion-background-color); }
+
+.gg-home__hero {
+  position:   relative;
+  padding:    calc(env(safe-area-inset-top) + 20px) 16px 20px;
+  background: var(--gg-surface);
+  border-bottom: 1px solid var(--gg-border);
+  overflow:   hidden;
+}
+
+.gg-home__glow {
+  position:   absolute;
+  top: -40px; left: 50%;
+  transform:  translateX(-50%);
+  width:  500px; height: 200px;
+  background: radial-gradient(ellipse, #00e87a18 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.gg-home__logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.gg-home__logo-icon { font-size: 2rem; }
+.gg-home__logo-name {
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -1px;
+  background: linear-gradient(135deg, #00e87a, #c8ff6b);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+.gg-home__logo-sub {
+  font-size: .58rem; color: var(--gg-muted);
+  font-family: var(--gg-mono); letter-spacing: .8px;
+}
+
+.gg-home__search-wrap {
+  display: flex; gap: 6px; align-items: center; margin-bottom: 12px;
+}
+.gg-home__searchbar {
+  flex: 1;
+  --background: var(--gg-surface2);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--gg-muted);
+  --border-radius: 12px;
+  --box-shadow: none;
+  border: 1px solid var(--gg-border);
+  border-radius: 12px;
+  padding: 0;
+}
+.gg-home__gps-btn {
+  --color: var(--gg-green);
+  --border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.gg-home__quick {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 2px; scrollbar-width: none;
+}
+.gg-home__quick::-webkit-scrollbar { display: none; }
+
+.gg-home__quick-chip {
+  display:     inline-flex; align-items: center; gap: 5px;
+  padding:     5px 13px;
+  background:  var(--gg-surface2);
+  border:      1px solid var(--gg-border2);
+  border-radius: 20px;
+  font-size:   12px; color: var(--gg-green);
+  cursor:      pointer; white-space: nowrap;
+  position:    relative; overflow: hidden;
+  font-family: var(--ion-font-family);
+  transition:  border-color .15s;
+}
+.gg-home__quick-chip:active { border-color: var(--gg-green); }
+.gg-home__quick-icon { font-size: 14px; }
+
+/* Provider strip */
+.gg-home__section-label {
+  font-size: .6rem; font-family: var(--gg-mono);
+  color: var(--gg-muted); letter-spacing: .8px;
+  padding: 14px 16px 6px;
+}
+.gg-home__providers {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding: 0 16px 12px; scrollbar-width: none;
+}
+.gg-home__providers::-webkit-scrollbar { display: none; }
+.gg-home__provider-badge {
+  flex-shrink: 0; padding: 5px 14px;
+  border-radius: 20px; font-size: 10px;
+}
+
+/* Stats */
+.gg-home__stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; padding: 0 16px 14px;
+}
+.gg-home__stat-card {
+  --background: var(--gg-surface2);
+  border: 1px solid var(--gg-border) !important;
+  border-radius: 12px !important;
+  margin: 0;
+}
+.gg-home__stat-card ion-card-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 12px 8px;
+}
+.gg-home__stat-val {
+  font-size: 1.1rem; font-weight: 800; font-family: var(--gg-mono); line-height: 1;
+}
+.gg-home__stat-lbl { font-size: .6rem; color: var(--gg-muted); letter-spacing: .4px; }
+
+/* CTA */
+.gg-home__cta { padding: 0 16px 32px; }
+.gg-home__cta-btn {
+  --background: linear-gradient(135deg, #00c468, #00e87a);
+  --color: #000;
+  --border-radius: 14px;
+  font-weight: 800; font-size: 1rem;
+  height: 52px;
+}

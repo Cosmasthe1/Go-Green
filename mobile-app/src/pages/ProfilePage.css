@@ -1,0 +1,104 @@
+.gg-profile { --background: var(--ion-background-color); }
+
+/* Hero */
+.gg-profile__hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: calc(env(safe-area-inset-top) + 28px) 16px 24px;
+  background: var(--gg-surface);
+  border-bottom: 1px solid var(--gg-border);
+  position: relative;
+}
+.gg-profile__hero::before {
+  content: ''; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 400px; height: 160px;
+  background: radial-gradient(ellipse, #00e87a14 0%, transparent 70%);
+  pointer-events: none;
+}
+.gg-profile__avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gg-green2), var(--gg-lime));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; margin-bottom: 10px;
+  box-shadow: 0 0 20px var(--gg-green)33;
+}
+.gg-profile__name         { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
+.gg-profile__phone-display{ font-size: .82rem; color: var(--gg-muted); font-family: var(--gg-mono); margin-bottom: 12px; }
+
+.gg-profile__status-row   { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.gg-profile__status-chip  {
+  --background: var(--chip-bg, var(--gg-dim));
+  font-size: .68rem; font-weight: 700; font-family: var(--gg-mono);
+  height: 26px; padding: 0 10px;
+}
+
+/* Lists */
+.gg-profile__list         { padding: 0; background: transparent !important; }
+.gg-profile__list-header  { font-size: .6rem; color: var(--gg-muted); letter-spacing: .8px; font-family: var(--gg-mono); }
+
+/* Cards */
+.gg-profile__card {
+  margin: 0 14px 10px !important;
+  border: 1px solid var(--gg-border) !important;
+  border-radius: var(--gg-r) !important;
+}
+.gg-profile__card ion-card-content { padding: 14px !important; }
+
+/* Phone field */
+.gg-profile__field-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .72rem; color: var(--gg-muted); font-family: var(--gg-mono);
+  letter-spacing: .4px; margin-bottom: 8px;
+}
+.gg-profile__phone-row    { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.gg-profile__phone-input  {
+  flex: 1;
+  --background: var(--gg-surface2); --color: var(--ion-text-color);
+  --placeholder-color: var(--gg-muted); --border-radius: var(--gg-r-sm);
+  border: 1px solid var(--gg-border2); border-radius: var(--gg-r-sm);
+  font-family: var(--gg-mono); font-size: .88rem;
+  --padding-start: 12px; --padding-end: 12px;
+}
+.gg-profile__save-btn {
+  --background: linear-gradient(135deg, var(--gg-green2), var(--gg-green));
+  --color: #000; --border-radius: var(--gg-r-sm);
+  font-weight: 700; flex-shrink: 0;
+}
+.gg-profile__phone-hint   { font-size: .65rem; color: var(--gg-muted); }
+
+/* Setting rows */
+.gg-profile__setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.gg-profile__setting-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .82rem; font-weight: 600; margin-bottom: 3px;
+}
+.gg-profile__setting-sub  { font-size: .68rem; color: var(--gg-muted); }
+
+/* WhatsApp info table */
+.gg-profile__wa-info {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--gg-border);
+}
+.gg-profile__wa-info-row {
+  display: flex; justify-content: space-between;
+  font-size: .72rem; padding: 4px 0; color: var(--gg-muted);
+}
+.gg-profile__wa-info-row span:first-child { color: var(--gg-muted); }
+
+/* Carbon info */
+.gg-profile__info-row {
+  display: flex; justify-content: space-between;
+  padding: 6px 0; border-bottom: 1px solid var(--gg-border);
+  font-size: .75rem;
+}
+.gg-profile__info-row:last-child { border-bottom: none; }
+.gg-profile__info-key { color: var(--gg-muted); }
+.gg-profile__info-val { color: var(--ion-text-color); font-weight: 600; font-family: var(--gg-mono); }
+
+/* App info footer */
+.gg-profile__app-info {
+  text-align: center; padding: 16px;
+  font-size: .68rem; color: var(--gg-muted);
+  font-family: var(--gg-mono); line-height: 1.8;
+}
