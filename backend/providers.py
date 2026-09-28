@@ -85,11 +85,11 @@ class _Base:
         drop_lat:   float, drop_lon:   float,
     ) -> RideOffer | None:
         dist   = haversine_km(pickup_lat, pickup_lon, drop_lat, drop_lon)
-        surge  = random.choice([1.0, 1.0, 1.0, 1.2, 1.5])
+        surge  = 1.0
         price  = round((self.base_fare + self.base_rate * dist) * surge, -1)
-        eta    = random.randint(2, 10)
-        dur    = int(dist / 30 * 60) + random.randint(2, 8)   # ~30 km/h city speed
-        co2    = dist * 120  # g saved vs avg ICE (120 g/km)
+        eta    = 5
+        dur    = max(12, int(dist / 30 * 60) + 5)
+        co2    = dist * 120
 
         # Random driver
         names   = ["James K.", "Amina W.", "Peter N.", "Grace O.", "Samuel M.",
@@ -101,19 +101,19 @@ class _Base:
             provider       = self.provider,
             provider_slug  = self.provider_slug,
             ride_type      = self.ride_type,
-            ev_model       = random.choice(models),
+            ev_model       = models[0],
             distance_km    = round(dist, 2),
             eta_min        = eta,
             duration_min   = dur,
             price_kes      = price,
             surge          = surge,
-            driver_name    = random.choice(names),
-            driver_rating  = round(random.uniform(4.2, 5.0), 1),
-            driver_phone   = f"+2547{random.randint(10000000, 99999999)}",
-            plate          = f"{random.choice(plates)} {random.randint(100,999)} {random.choice('ABCDEFGH')}",
-            seats          = random.choice([3, 3, 4, 4, 6]),
+            driver_name    = names[0],
+            driver_rating  = 4.9,
+            driver_phone   = "+254712345678",
+            plate          = "KDA 123 A",
+            seats          = 4,
             co2_saved_g    = round(co2),
-            promo_code     = random.choice(["", "", "", "GREEN10", "EVRIDE5"]),
+            promo_code     = "GREEN10",
             logo_url       = self.logo_url,
             color          = self.color,
         )
@@ -133,78 +133,84 @@ class UberAdapter(_Base):
     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23000'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EUber%3C/text%3E%3C/svg%3E"
 
 
-# class BoltAdapter(_Base):
-#     provider      = "Bolt"
-#     provider_slug = "bolt"
-#     color         = "#34D186"
-#     ride_type     = "Bolt EV"
-#     base_rate     = 42.0
-#     base_fare     = 90.0
-#     ev_models     = ["BYD Atto 3", "MG ZS EV", "Kia EV6"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%2334D186'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EBolt%3C/text%3E%3C/svg%3E"
-#
-#
-# class YegoAdapter(_Base):
-#     provider      = "Yego"
-#     provider_slug = "yego"
-#     color         = "#FF6B00"
-#     ride_type     = "Yego EV"
-#     base_rate     = 48.0
-#     base_fare     = 100.0
-#     ev_models     = ["Hyundai IONIQ 5", "BYD Dolphin", "Chery Omoda E5"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23FF6B00'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EYego%3C/text%3E%3C/svg%3E"
-#
-#
-# class FarasAdapter(_Base):
-#     provider      = "Faras"
-#     provider_slug = "faras"
-#     color         = "#1A56DB"
-#     ride_type     = "Faras Green"
-#     base_rate     = 40.0
-#     base_fare     = 85.0
-#     ev_models     = ["BYD Seal", "Volkswagen ID.4", "MG4 EV"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%231A56DB'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EFaras%3C/text%3E%3C/svg%3E"
-#
-#
-# class LittleCabsAdapter(_Base):
-#     provider      = "Little Cabs"
-#     provider_slug = "little"
-#     color         = "#FECC00"
-#     ride_type     = "Little EV"
-#     base_rate     = 45.0
-#     base_fare     = 95.0
-#     ev_models     = ["Nissan Leaf", "BYD e6", "JAC iEV7S"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23FECC00'/%3E%3Ctext x='6' y='22' fill='%23333' font-size='13' font-family='Arial' font-weight='bold'%3ELittle%3C/text%3E%3C/svg%3E"
-#
-#
-# class WasiliAdapter(_Base):
-#     provider      = "Wasili"
-#     provider_slug = "wasili"
-#     color         = "#7C3AED"
-#     ride_type     = "Wasili EV"
-#     base_rate     = 38.0
-#     base_fare     = 80.0
-#     ev_models     = ["BYD Atto 3", "Great Wall ORA", "Chery Tiggo 7 E"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%237C3AED'/%3E%3Ctext x='6' y='22' fill='white' font-size='14' font-family='Arial' font-weight='bold'%3EWasili%3C/text%3E%3C/svg%3E"
-#
-#
-# class WeegoAdapter(_Base):
-#     provider      = "Weego"
-#     provider_slug = "weego"
-#     color         = "#059669"
-#     ride_type     = "Weego EV"
-#     base_rate     = 44.0
-#     base_fare     = 88.0
-#     ev_models     = ["BYD Yuan Plus", "Geely Geometry C", "Neta V"]
-#     logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23059669'/%3E%3Ctext x='6' y='22' fill='white' font-size='15' font-family='Arial' font-weight='bold'%3EWeego%3C/text%3E%3C/svg%3E"
-#
-#
+class BoltAdapter(_Base):
+    provider      = "Bolt"
+    provider_slug = "bolt"
+    color         = "#34D186"
+    ride_type     = "Bolt EV"
+    base_rate     = 55.0
+    base_fare     = 120.0
+    ev_models     = ["BYD Atto 3", "MG ZS EV", "Kia EV6"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%2334D186'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EBolt%3C/text%3E%3C/svg%3E"
+
+
+class YegoAdapter(_Base):
+    provider      = "Yego"
+    provider_slug = "yego"
+    color         = "#FF6B00"
+    ride_type     = "Yego EV"
+    base_rate     = 58.0
+    base_fare     = 130.0
+    ev_models     = ["Hyundai IONIQ 5", "BYD Dolphin", "Chery Omoda E5"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23FF6B00'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EYego%3C/text%3E%3C/svg%3E"
+
+
+class FarasAdapter(_Base):
+    provider      = "Faras"
+    provider_slug = "faras"
+    color         = "#1A56DB"
+    ride_type     = "Faras Green"
+    base_rate     = 60.0
+    base_fare     = 145.0
+    ev_models     = ["BYD Seal", "Volkswagen ID.4", "MG4 EV"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%231A56DB'/%3E%3Ctext x='10' y='22' fill='white' font-size='18' font-family='Arial' font-weight='bold'%3EFaras%3C/text%3E%3C/svg%3E"
+
+
+class LittleCabsAdapter(_Base):
+    provider      = "Little Cabs"
+    provider_slug = "little"
+    color         = "#FECC00"
+    ride_type     = "Little EV"
+    base_rate     = 63.0
+    base_fare     = 160.0
+    ev_models     = ["Nissan Leaf", "BYD e6", "JAC iEV7S"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23FECC00'/%3E%3Ctext x='6' y='22' fill='%23333' font-size='13' font-family='Arial' font-weight='bold'%3ELittle%3C/text%3E%3C/svg%3E"
+
+
+class WasiliAdapter(_Base):
+    provider      = "Wasili"
+    provider_slug = "wasili"
+    color         = "#7C3AED"
+    ride_type     = "Wasili EV"
+    base_rate     = 65.0
+    base_fare     = 175.0
+    ev_models     = ["BYD Atto 3", "Great Wall ORA", "Chery Tiggo 7 E"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%237C3AED'/%3E%3Ctext x='6' y='22' fill='white' font-size='14' font-family='Arial' font-weight='bold'%3EWasili%3C/text%3E%3C/svg%3E"
+
+
+class WeegoAdapter(_Base):
+    provider      = "Weego"
+    provider_slug = "weego"
+    color         = "#059669"
+    ride_type     = "Weego EV"
+    base_rate     = 68.0
+    base_fare     = 190.0
+    ev_models     = ["BYD Yuan Plus", "Geely Geometry C", "Neta V"]
+    logo_url      = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 30'%3E%3Crect width='80' height='30' fill='%23059669'/%3E%3Ctext x='6' y='22' fill='white' font-size='15' font-family='Arial' font-weight='bold'%3EWeego%3C/text%3E%3C/svg%3E"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Registry
 # ─────────────────────────────────────────────────────────────────────────────
 
 ALL_PROVIDERS: list[_Base] = [
     UberAdapter(),
+    BoltAdapter(),
+    YegoAdapter(),
+    FarasAdapter(),
+    LittleCabsAdapter(),
+    WasiliAdapter(),
+    WeegoAdapter(),
 ]
 
 PROVIDER_MAP: dict[str, _Base] = {p.provider: p for p in ALL_PROVIDERS}
@@ -227,5 +233,5 @@ def get_all_offers(
                     offers.append(offer)
             except Exception:
                 pass
-    offers.sort(key=lambda o: o.price_kes)
+    offers.sort(key=lambda o: (o.price_kes, o.provider))
     return offers

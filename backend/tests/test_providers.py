@@ -5,7 +5,7 @@ def test_get_all_offers_returns_ranked_offers_for_route():
     offers = get_all_offers(-1.2921, 36.8219, -1.286, 36.841)
 
     assert len(offers) == 7
-    assert [offer.provider for offer in offers] == [
+    expected_order = [
         "Uber",
         "Bolt",
         "Yego",
@@ -14,4 +14,6 @@ def test_get_all_offers_returns_ranked_offers_for_route():
         "Wasili",
         "Weego",
     ]
-    assert offers == sorted(offers, key=lambda offer: offer.price_kes)
+    assert [offer.provider for offer in offers] == expected_order
+    assert [offer.price_kes for offer in offers] == sorted(offer.price_kes for offer in offers)
+    assert {offer.provider for offer in offers} == set(expected_order)
