@@ -92,7 +92,9 @@ describe('BookingPage', () => {
     expect(screen.getByText('Westlands')).toBeInTheDocument();
     expect(screen.getByText('Mombasa Road')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /confirm & pay with m-pesa/i }));
+    const confirmButton = screen.getByText(/Confirm & Pay with M-Pesa/i).closest('ion-button');
+    expect(confirmButton).not.toBeNull();
+    fireEvent.click(confirmButton!);
 
     await waitFor(() => expect(mockApiBookRide).toHaveBeenCalledTimes(1));
     expect(mockApiBookRide).toHaveBeenCalledWith('+254712345678', 'Uber', expect.objectContaining({ provider: 'Uber' }));
