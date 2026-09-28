@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import BookingPage from '../pages/BookingPage';
 
-const mockApiBookRide = vi.fn();
+const { mockApiBookRide, mockGoBack, mockPush } = vi.hoisted(() => ({
+  mockApiBookRide: vi.fn(),
+  mockGoBack: vi.fn(),
+  mockPush: vi.fn(),
+}));
 
 vi.mock('@capacitor/haptics', () => ({
   Haptics: { impact: vi.fn(), notification: vi.fn() },
@@ -23,9 +27,6 @@ vi.mock('../services/api', () => ({
     cancelTrip: vi.fn().mockResolvedValue({ success: true }),
   },
 }));
-
-const mockGoBack = vi.fn();
-const mockPush = vi.fn();
 
 vi.mock('@ionic/react', async () => {
   const actual = await vi.importActual<typeof import('@ionic/react')>('@ionic/react');
