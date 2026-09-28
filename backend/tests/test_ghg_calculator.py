@@ -30,14 +30,14 @@ def test_calculate_trip_matches_vm0038_hand_calculation(vehicle_category, distan
     electricity_kwh = distance_km * params.ev_kwh_per_km
     pe_kg = round((electricity_kwh / CHARGER_EFFICIENCY[charger_type]) * EF_GRID_KENYA_KG_PER_KWH, 4)
     gross_kg = round(max(baseline_kg - pe_kg, 0.0), 4)
-    net_kg = round(gross_kg * (1 - 0.03), 4)
-    expected_net_vcu = round((net_kg / 1000.0) * NET_VCU_FACTOR, 8)
+    expected_net_vcu = round((gross_kg / 1000.0) * NET_VCU_FACTOR, 8)
 
     result = GHGCalculator.calculate_trip(vehicle_category, distance_km, charger_type)
 
     assert result.vehicle_category == vehicle_category
     assert result.baseline_emissions_kg == pytest.approx(baseline_kg, abs=1e-4)
     assert result.project_emissions_kg == pytest.approx(pe_kg, abs=1e-4)
+    assert result.gross_reduction_kg == pytest.approx(gross_kg, abs=1e-4)
     assert result.net_vcu == pytest.approx(expected_net_vcu, abs=1e-7)
     assert result.gross_reduction_kg >= 0
     assert result.net_reduction_kg > 0

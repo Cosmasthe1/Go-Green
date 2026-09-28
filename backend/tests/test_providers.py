@@ -5,9 +5,10 @@ def test_get_all_offers_returns_ranked_offers_for_route():
     offers = get_all_offers(-1.2921, 36.8219, -1.286, 36.841)
 
     assert len(offers) == 7
+    assert len(offers) == 7
     expected_order = [
-        "Uber",
         "Bolt",
+        "Uber",
         "Yego",
         "Faras",
         "Little Cabs",
